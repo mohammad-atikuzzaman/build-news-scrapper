@@ -484,7 +484,7 @@
 
 
 
-// unga bunga
+// get news with details
 
 const axios = require('axios');
 const cheerio = require('cheerio');
@@ -505,24 +505,24 @@ async function scrapeFirstNewsWithDetails() {
     const firstHeadline = homeTopNewsBox.find('h2').first();
     const title = firstHeadline.text().trim();
     const relativeLink = firstHeadline.closest('a').attr('href');
-    const fullLink = relativeLink.startsWith('http') ? relativeLink : BASE_URL + relativeLink;
 
-    if (!title || !fullLink) {
+    if (!title || !relativeLink) {
       throw new Error("Couldn't find news title or link!");
     }
 
     console.log('📰 Title:', title);
-    console.log('🔗 Link:', fullLink);
+    console.log('🔗 Link:', relativeLink);
 
     // STEP 2: Visit the news link to get full description
-    const { data: articlePage } = await axios.get(fullLink, {
+    const { data: articlePage } = await axios.get(relativeLink, {
       headers: { 'User-Agent': 'Mozilla/5.0' },
     });
 
     const $$ = cheerio.load(articlePage);
 
     // Grab all paragraphs inside the news content section
-    const paragraphs = $$('.single-content p');
+    const paragraphs = $$('.content-details p');
+    // return console.log(paragraphs);
     const description = [];
 
     paragraphs.each((_, el) => {
