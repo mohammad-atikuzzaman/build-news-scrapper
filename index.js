@@ -350,44 +350,49 @@
 
 // scrapeFirstNews();
 
+// __________________________________________________________________________________________________
+
 // scraper for kalerkontho
 
-// const axios = require('axios');
-// const cheerio = require('cheerio');
+// const axios = require("axios");
+// const cheerio = require("cheerio");
 
-// const BASE_URL = 'https://www.kalerkantho.com';
+// const BASE_URL = "https://www.kalerkantho.com";
 
 // async function scrapeFirstNews() {
 //   try {
-//     const { data } = await axios.get(BASE_URL, {
-//       headers: { 'User-Agent': 'Mozilla/5.0' },
+//     // 1. Fetch homepage and get the first news link
+//     const { data: homepage } = await axios.get(BASE_URL);
+//     const $ = cheerio.load(homepage);
+
+//     const firstNews = $(".leadViewArea a").first();
+//     const title = firstNews.find("h1").text().trim();
+//     const link = new URL(firstNews.attr("href"), BASE_URL).href;
+
+//     if (!title || !link) throw new Error("Title/Link not found!");
+
+//     console.log("📌 Title:", title);
+//     console.log("🔗 Link:", link);
+
+//     const { data: articlePage } = await axios.get(link, {
+//       headers: { "User-Agent": "Mozilla/5.0" },
 //     });
 
-//     const $ = cheerio.load(data);
+//     const $$ = cheerio.load(articlePage);
 
-//     // 🧠 leadViewArea এর ভিতরের h1 খুঁজে বের করা
-//     const firstHeadline = $('.leadViewArea h1').first();
-//     const title = firstHeadline.text().trim();
+//     const paragraphs = $$(".newsArticle article");
+//     console.log(paragraphs);
 
-//     // h1 এর parent এ anchor tag (a) আছে – ওখান থেকে লিংক নেওয়া
-//     const link = firstHeadline.closest('a').attr('href');
+    return { title, link };
+  } catch (error) {
+    console.error("❌ Error:", error.message);
+  }
+}
 
-//     if (!title || !link) throw new Error("Couldn't find news title or link!");
+// Run
+scrapeFirstNews();
 
-//     console.log('📰 Title:', title);
-//     console.log('🔗 Link:', link.startsWith('http') ? link : BASE_URL + link);
-//   } catch (err) {
-//     console.error('❌ Error:', err.message);
-//   }
-// }
-
-// scrapeFirstNews();
-
-
-
-
-//_____________________________________________________________________________ 
-
+//_____________________________________________________________________________
 
 // scraper for jugantor
 
@@ -396,94 +401,55 @@
 
 // const BASE_URL = "https://www.jugantor.com";
 
-// async function scrapeFirstNews() {
+// async function scrapeFirstNewsWithDetails() {
 //   try {
-//     const { data } = await axios.get(BASE_URL, {
+//     // Step 1: Homepage থেকে title, link
+//     const { data: homepage } = await axios.get(BASE_URL, {
 //       headers: { "User-Agent": "Mozilla/5.0" },
 //     });
 
-//     const $ = cheerio.load(data);
+//     const $ = cheerio.load(homepage);
 
-//     // 🔍 desktopSectionLead ক্লাসের ভেতরে প্রথম h1 strong, p, এবং a খোঁজা
 //     const leadSection = $(".desktopSectionLead").first();
 
 //     const title = leadSection.find("h1 strong").text().trim();
-//     const description = leadSection.find("p").text().trim();
-//     const link = leadSection.find("a").attr("href");
+//     const relativeLink = leadSection.find("a").attr("href");
+//     const fullLink = relativeLink.startsWith("http")
+//       ? relativeLink
+//       : BASE_URL + relativeLink;
 
-//     if (!title || !link) {
-//       throw new Error("Couldn't find the news title or link!");
+//     if (!title || !fullLink) {
+//       throw new Error("Couldn't find news title or link!");
 //     }
 
 //     console.log("📰 Title:", title);
-//     console.log("📝 Description:", description);
-//     console.log("🔗 Link:", link.startsWith("http") ? link : BASE_URL + link);
+//     console.log("🔗 Link:", fullLink);
+
+//     // Step 2: News page থেকে full description
+//     const { data: articlePage } = await axios.get(fullLink, {
+//       headers: { "User-Agent": "Mozilla/5.0" },
+//     });
+
+//     const $$ = cheerio.load(articlePage);
+
+//     // Jugantor news content is usually inside '.news-content p'
+//     const paragraphs = $$(".desktopDetailBody p");
+//     const description = [];
+
+//     paragraphs.each((_, el) => {
+//       const text = $$(el).text().trim();
+//       if (text) description.push(text);
+//     });
+
+//     const fullDescription = description.join("\n\n");
+
+//     console.log("\n📝 Description:\n", fullDescription);
 //   } catch (err) {
 //     console.error("❌ Error:", err.message);
 //   }
 // }
 
-// scrapeFirstNews();
-
-
-const axios = require("axios");
-const cheerio = require("cheerio");
-
-const BASE_URL = "https://www.jugantor.com";
-
-async function scrapeFirstNewsWithDetails() {
-  try {
-    // Step 1: Homepage থেকে title, link
-    const { data: homepage } = await axios.get(BASE_URL, {
-      headers: { "User-Agent": "Mozilla/5.0" },
-    });
-
-    const $ = cheerio.load(homepage);
-
-    const leadSection = $(".desktopSectionLead").first();
-
-    const title = leadSection.find("h1 strong").text().trim();
-    const relativeLink = leadSection.find("a").attr("href");
-    const fullLink = relativeLink.startsWith("http")
-      ? relativeLink
-      : BASE_URL + relativeLink;
-
-    if (!title || !fullLink) {
-      throw new Error("Couldn't find news title or link!");
-    }
-
-    console.log("📰 Title:", title);
-    console.log("🔗 Link:", fullLink);
-
-    // Step 2: News page থেকে full description
-    const { data: articlePage } = await axios.get(fullLink, {
-      headers: { "User-Agent": "Mozilla/5.0" },
-    });
-
-    const $$ = cheerio.load(articlePage);
-
-    // Jugantor news content is usually inside '.news-content p'
-    const paragraphs = $$(".desktopDetailBody p");
-    const description = [];
-
-    paragraphs.each((_, el) => {
-      const text = $$(el).text().trim();
-      if (text) description.push(text);
-    });
-
-    const fullDescription = description.join("\n\n");
-
-    console.log("\n📝 Description:\n", fullDescription);
-  } catch (err) {
-    console.error("❌ Error:", err.message);
-  }
-}
-
-scrapeFirstNewsWithDetails();
-
-
-
-
+// scrapeFirstNewsWithDetails();
 
 // get news with details ( Jagonew24)
 
