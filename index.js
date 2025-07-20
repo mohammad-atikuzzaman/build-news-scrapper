@@ -383,19 +383,18 @@
 //     const paragraphs = $$(".newsArticle article");
 //     console.log(paragraphs);
 
-    return { title, link };
-  } catch (error) {
-    console.error("❌ Error:", error.message);
-  }
-}
+//     return { title, link };
+//   } catch (error) {
+//     console.error("❌ Error:", error.message);
+//   }
+// }
 
 // Run
-scrapeFirstNews();
+// scrapeFirstNews();
 
 //_____________________________________________________________________________
 
 // scraper for jugantor
-
 // const axios = require("axios");
 // const cheerio = require("cheerio");
 
@@ -403,7 +402,14 @@ scrapeFirstNews();
 
 // async function scrapeFirstNewsWithDetails() {
 //   try {
-//     // Step 1: Homepage থেকে title, link
+//     // Object to store the scraped data
+//     const result = {
+//       title: "",
+//       link: "",
+//       description: ""
+//     };
+
+//     // Step 1: Fetch homepage to get title and link
 //     const { data: homepage } = await axios.get(BASE_URL, {
 //       headers: { "User-Agent": "Mozilla/5.0" },
 //     });
@@ -411,28 +417,25 @@ scrapeFirstNews();
 //     const $ = cheerio.load(homepage);
 
 //     const leadSection = $(".desktopSectionLead").first();
-
-//     const title = leadSection.find("h1 strong").text().trim();
+//     result.title = leadSection.find("h1 strong").text().trim();
 //     const relativeLink = leadSection.find("a").attr("href");
-//     const fullLink = relativeLink.startsWith("http")
-//       ? relativeLink
-//       : BASE_URL + relativeLink;
+//     result.link = relativeLink.startsWith("http") ? relativeLink : BASE_URL + relativeLink;
 
-//     if (!title || !fullLink) {
+//     if (!result.title || !result.link) {
 //       throw new Error("Couldn't find news title or link!");
 //     }
 
-//     console.log("📰 Title:", title);
-//     console.log("🔗 Link:", fullLink);
+//     console.log("📰 Title:", result.title);
+//     console.log("🔗 Link:", result.link);
 
-//     // Step 2: News page থেকে full description
-//     const { data: articlePage } = await axios.get(fullLink, {
+//     // Step 2: Fetch article page to get full description
+//     const { data: articlePage } = await axios.get(result.link, {
 //       headers: { "User-Agent": "Mozilla/5.0" },
 //     });
 
 //     const $$ = cheerio.load(articlePage);
 
-//     // Jugantor news content is usually inside '.news-content p'
+//     // Extract all paragraphs from the news content
 //     const paragraphs = $$(".desktopDetailBody p");
 //     const description = [];
 
@@ -441,55 +444,70 @@ scrapeFirstNews();
 //       if (text) description.push(text);
 //     });
 
-//     const fullDescription = description.join("\n\n");
+//     result.description = description.join("\n\n");
+//     console.log("\n📝 Description:\n", result.description);
 
-//     console.log("\n📝 Description:\n", fullDescription);
+//     // Return the final result
+//     return result;
+
 //   } catch (err) {
 //     console.error("❌ Error:", err.message);
+//     return null; // Return null if scraping fails
 //   }
 // }
 
-// scrapeFirstNewsWithDetails();
+// // Usage (inside an async function)
+// (async () => {
+//   const wholeData = await scrapeFirstNewsWithDetails();
+//   console.log("\n✅ Final Result:");
+//   console.log(wholeData); // { title: "...", link: "...", description: "..." }
+// })();
+
+// _____________________________________________________________________________
 
 // get news with details ( Jagonew24)
-
 // const axios = require('axios');
 // const cheerio = require('cheerio');
 
 // const BASE_URL = 'https://www.jagonews24.com';
 
+// const axiosInstance = axios.create({
+//   baseURL: BASE_URL,
+//   headers: {
+//     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+//     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+//     'Accept-Language': 'en-US,en;q=0.5',
+//     'Accept-Encoding': 'gzip, deflate, br',
+//     'Connection': 'keep-alive',
+//     'Referer': BASE_URL,
+//     'Upgrade-Insecure-Requests': '1',
+//   }
+// });
+
 // async function scrapeFirstNewsWithDetails() {
 //   try {
-//     // STEP 1: Get homepage content
-//     const { data: homepage } = await axios.get(BASE_URL, {
-//       headers: { 'User-Agent': 'Mozilla/5.0' },
-//     });
+//     const result = { title: '', link: '', description: '' };
 
+//     // STEP 1: Get homepage content
+//     const { data: homepage } = await axiosInstance.get('/');
 //     const $ = cheerio.load(homepage);
 
 //     // Find the first headline inside .home-top-news-box
 //     const homeTopNewsBox = $('.home-top-news-box').first();
 //     const firstHeadline = homeTopNewsBox.find('h2').first();
-//     const title = firstHeadline.text().trim();
-//     const relativeLink = firstHeadline.closest('a').attr('href');
+//     result.title = firstHeadline.text().trim();
+//     result.link = firstHeadline.closest('a').attr('href');
 
-//     if (!title || !relativeLink) {
+//     if (!result.title || !result.link) {
 //       throw new Error("Couldn't find news title or link!");
 //     }
 
-//     console.log('📰 Title:', title);
-//     console.log('🔗 Link:', relativeLink);
-
 //     // STEP 2: Visit the news link to get full description
-//     const { data: articlePage } = await axios.get(relativeLink, {
-//       headers: { 'User-Agent': 'Mozilla/5.0' },
-//     });
-
+//     const { data: articlePage } = await axiosInstance.get(result.link);
 //     const $$ = cheerio.load(articlePage);
 
 //     // Grab all paragraphs inside the news content section
 //     const paragraphs = $$('.content-details p');
-//     // return console.log(paragraphs);
 //     const description = [];
 
 //     paragraphs.each((_, el) => {
@@ -497,12 +515,17 @@ scrapeFirstNews();
 //       if (text) description.push(text);
 //     });
 
-//     const fullDescription = description.join('\n\n');
+//     result.description = description.join('\n\n');
+//     return result;
 
-//     console.log('\n📝 Description:\n', fullDescription);
 //   } catch (err) {
 //     console.error('❌ Error:', err.message);
+//     return null;
 //   }
 // }
 
-// scrapeFirstNewsWithDetails();
+// // Usage (inside an async function)
+// (async () => {
+//   const wholeData = await scrapeFirstNewsWithDetails();
+//   console.log(wholeData); // { title: "...", link: "...", description: "..." }
+// })();
